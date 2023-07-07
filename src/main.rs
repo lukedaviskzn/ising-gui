@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 use app::IsingApp;
 
 mod app;

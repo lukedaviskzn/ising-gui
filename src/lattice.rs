@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use rand::Rng;
 
 use crate::spin::Spin;
@@ -132,55 +130,6 @@ impl Lattice {
             temperature,
             magnetic_field,
         }
-    }
-
-    pub fn from_str(source: &str, temperature: f32, magnetic_field: f32, lattice_type: LatticeType) -> Result<Lattice, ()> {
-        let mut size = 0;
-
-        let mut spins = vec![];
-
-        let lines = source.split("\n");
-
-        for line in lines {
-            let line = line.trim();
-            // skip empty lines
-            if line.len() == 0 {
-                continue;
-            }
-            if size == 0 {
-                size = line.len();
-            }
-            if line.len() != size {
-                return Err(());
-            }
-            for c in line.chars() {
-                match c {
-                    '+' => spins.push(Spin::Up),
-                    '-' => spins.push(Spin::Down),
-                    _ => return Err(()),
-                };
-            }
-        }
-
-        let interations = match lattice_type {
-            LatticeType::Ferromagnetic => vec![InterationsStorage::FERROMAGNETIC;size*size],
-            LatticeType::Antiferromagnetic => vec![InterationsStorage::ANTIFERROMAGNETIC;size*size],
-            LatticeType::SpinGlass { p_antiferro } => {
-                let mut ints = Vec::with_capacity(size*size);
-                for _ in 0..size*size {
-                    ints.push(InterationsStorage::spin_glass(p_antiferro));
-                }
-                ints
-            },
-        };
-
-        Ok(Lattice {
-            state: spins,
-            interations,
-            size,
-            temperature,
-            magnetic_field,
-        })
     }
 
     pub fn internal_energy(&self) -> f32 {
@@ -354,29 +303,5 @@ impl Lattice {
     fn flip(&mut self, x: isize, y: isize) {
         let i = self.index(x, y);
         self.state[i] = -self.state[i];
-    }
-}
-
-impl Display for Lattice {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut out = String::new();
-
-        let s = self.size as isize;
-        
-        for y in 0..s {
-            for x in 0..s {
-                let spin = self.get(x, y);
-                out.push_str(match spin {
-                    Spin::Up => "██",
-                    Spin::Down => "  ",
-                });
-            }
-
-            if y < s - 1 {
-                out.push('\n');
-            }
-        }
-        
-        f.write_str(&out)
     }
 }
