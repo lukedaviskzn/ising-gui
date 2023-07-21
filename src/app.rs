@@ -200,7 +200,9 @@ impl eframe::App for IsingApp {
             ui.add_space(8.0);
 
             if !self.paused && std::time::Instant::now() - self.last_epoch > std::time::Duration::from_secs_f32(1.0/self.fps) {
+                let start = std::time::Instant::now();
                 self.lattice.epoch();
+                println!("Epoch time: {:.5}", (std::time::Instant::now() - start).as_secs_f32());
                 // force redraw
                 self.lattice_texture = None;
                 self.last_epoch = std::time::Instant::now();
@@ -209,7 +211,10 @@ impl eframe::App for IsingApp {
             let available_space = ui.available_size().x.min(ui.available_size().y);
             
             let texture: &egui::TextureHandle = self.lattice_texture.get_or_insert_with(|| {
-                ui.ctx().load_texture("lattice-texture", self.lattice.as_image(available_space as usize), Default::default())
+                let start = std::time::Instant::now();
+                let tex = ui.ctx().load_texture("lattice-texture", self.lattice.as_image(available_space as usize), Default::default());
+                println!("Texture time: {:.5}", (std::time::Instant::now() - start).as_secs_f32());
+                tex
             });
             
             ui.image(texture, egui::Vec2::new(available_space, available_space));
